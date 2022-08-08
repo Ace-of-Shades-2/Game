@@ -22,7 +22,7 @@ runs:
       shell: bash
       run: |
         mvn -B -pl ${{inputs.module}} -am clean package
-        asset=$(find target/ -type f -name "*jar-with-dependencies.jar")
+        asset=$(find ${{inputs.module}}/target/ -type f -name "*jar-with-dependencies.jar")
         echo "::set-output name=asset_path::$asset"
     - name: Upload Asset
       id: upload
