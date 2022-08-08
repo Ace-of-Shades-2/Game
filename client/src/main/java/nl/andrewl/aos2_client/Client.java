@@ -81,7 +81,7 @@ public class Client implements Runnable {
 			communicationHandler.establishConnection();
 		} catch (IOException e) {
 			System.err.println("Couldn't connect to the server: " + e.getMessage());
-			return;
+			System.exit(1);
 		}
 
 		gameRenderer = new GameRenderer(this, inputHandler, camera);
