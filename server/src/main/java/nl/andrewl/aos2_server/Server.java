@@ -1,7 +1,6 @@
 package nl.andrewl.aos2_server;
 
 import nl.andrewl.aos2_server.cli.ServerCli;
-import nl.andrewl.aos2_server.cli.ingame.PlayerCommandHandler;
 import nl.andrewl.aos2_server.config.ServerConfig;
 import nl.andrewl.aos2_server.logic.WorldUpdater;
 import nl.andrewl.aos2_server.model.ServerPlayer;
@@ -41,7 +40,7 @@ public class Server implements Runnable {
 	private final PlayerManager playerManager;
 	private final TeamManager teamManager;
 	private final ProjectileManager projectileManager;
-	private final PlayerCommandHandler commandHandler;
+	private final ChatManager chatManager;
 	private final World world;
 	private final WorldUpdater worldUpdater;
 
@@ -54,7 +53,7 @@ public class Server implements Runnable {
 		this.playerManager = new PlayerManager(this);
 		this.teamManager = new TeamManager(this);
 		this.projectileManager = new ProjectileManager(this);
-		this.commandHandler = new PlayerCommandHandler(this);
+		this.chatManager = new ChatManager(this);
 		this.worldUpdater = new WorldUpdater(this, config.ticksPerSecond);
 
 		if (config.world.startsWith("worlds.")) {
@@ -187,8 +186,8 @@ public class Server implements Runnable {
 		return projectileManager;
 	}
 
-	public void handleCommand(String cmd, ServerPlayer player, ClientCommunicationHandler handler) {
-		commandHandler.handle(cmd, player, handler);
+	public ChatManager getChatManager() {
+		return chatManager;
 	}
 
 	public static void main(String[] args) throws IOException {

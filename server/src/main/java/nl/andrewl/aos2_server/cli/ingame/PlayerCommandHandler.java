@@ -49,7 +49,11 @@ public class PlayerCommandHandler {
 			if (command != null) {
 				String[] args = new String[matches.size() - 1];
 				matches.subList(1, matches.size()).toArray(args);
-				command.handle(args, player, handler, server);
+				try {
+					command.handle(args, player, handler, server);
+				} catch (Exception e) {
+					handler.sendTcpMessage(ChatMessage.privateMessage("An error occurred: " + e.getMessage()));
+				}
 			} else {
 				handler.sendTcpMessage(ChatMessage.privateMessage("Unknown command: \"%s\".".formatted(mainCommandString)));
 			}

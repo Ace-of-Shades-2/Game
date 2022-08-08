@@ -76,15 +76,7 @@ public class ClientCommunicationHandler {
 				sendTcpMessage(new ChunkDataMessage(chunk));
 			}
 		} else if (msg instanceof ChatWrittenMessage chatWrittenMessage) {
-			if (chatWrittenMessage.message().startsWith("/")) {
-				server.handleCommand(chatWrittenMessage.message(), player, this);
-			} else {
-				server.getPlayerManager().broadcastTcpMessage(new ChatMessage(
-						System.currentTimeMillis(),
-						player.getUsername(),
-						chatWrittenMessage.message()
-				));
-			}
+			server.getChatManager().handle(this, player, chatWrittenMessage);
 		}
 	}
 
