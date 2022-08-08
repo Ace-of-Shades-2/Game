@@ -3,6 +3,9 @@ package nl.andrewl.aos2_server.logic;
 import nl.andrewl.aos2_server.Server;
 import org.joml.Math;
 
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 /**
  * A runnable to run as a separate thread, to periodically update the server's
  * world as players perform actions. This is essentially the "core" of the
@@ -10,6 +13,7 @@ import org.joml.Math;
  */
 public class WorldUpdater implements Runnable {
 	private final Server server;
+	private final Queue<Runnable> tasksToRun = new ConcurrentLinkedQueue<>();
 	private final float ticksPerSecond;
 	private final float secondsPerTick;
 	private volatile boolean running;
@@ -36,6 +40,9 @@ public class WorldUpdater implements Runnable {
 			long start = System.nanoTime();
 			long now = System.currentTimeMillis();
 			tick(now);
+			while (!tasksToRun.isEmpty()) {
+				tasksToRun.remove().run();
+			}
 			long elapsedNs = System.nanoTime() - start;
 			if (elapsedNs > nsPerTick) {
 				System.err.printf("Took %d ns to do one tick, which is more than the desired %d ns per tick.%n", elapsedNs, nsPerTick);
@@ -61,5 +68,9 @@ public class WorldUpdater implements Runnable {
 	private void tick(long currentTimeMillis) {
 		server.getPlayerManager().tick(currentTimeMillis, secondsPerTick);
 		server.getProjectileManager().tick(currentTimeMillis, secondsPerTick);
+	}
+
+	public void runLater(Runnable r) {
+		tasksToRun.add(r);
 	}
 }

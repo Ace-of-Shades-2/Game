@@ -45,6 +45,8 @@ public class Client implements Runnable {
 	private final Chat chat;
 	private final Queue<Runnable> mainThreadActions;
 
+	private final Vector3f playerMovement = new Vector3f(); // Util vector to use to avoid allocations at runtime.
+
 	public Client(ClientConfig config, ConnectConfig connectConfig) {
 		this.config = config;
 		this.connectConfig = connectConfig;
@@ -246,10 +248,9 @@ public class Client implements Runnable {
 	}
 
 	public void interpolatePlayers(long now, float dt) {
-		Vector3f movement = new Vector3f();
 		for (var player : players.values()) {
-			movement.set(player.getVelocity()).mul(dt);
-			player.getPosition().add(movement);
+			playerMovement.set(player.getVelocity()).mul(dt);
+			player.getPosition().add(playerMovement);
 			player.updateModelTransform();
 			soundManager.playWalkingSounds(player, world, now);
 		}

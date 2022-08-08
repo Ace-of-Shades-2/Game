@@ -1,5 +1,6 @@
 package nl.andrewl.aos2_client.render;
 
+import nl.andrewl.aos2_client.model.ModelTransformData;
 import nl.andrewl.aos2_client.render.model.Model;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
@@ -59,6 +60,10 @@ public class ModelRenderer {
 		glUniformMatrix4fv(modelUniform, false, transformData);
 		glUniformMatrix3fv(normalUniform, false, normalData);
 		model.draw();
+	}
+
+	public void render(Model model, ModelTransformData transformData) {
+		render(model, transformData.txData(), transformData.normData());
 	}
 
 	public void end() {

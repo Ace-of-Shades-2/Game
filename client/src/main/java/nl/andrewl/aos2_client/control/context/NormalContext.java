@@ -12,8 +12,6 @@ import nl.andrewl.aos_core.net.client.BlockColorMessage;
 import nl.andrewl.aos_core.net.client.ClientInputState;
 import nl.andrewl.aos_core.net.client.ClientOrientationState;
 
-import java.util.concurrent.ForkJoinPool;
-
 import static org.lwjgl.glfw.GLFW.*;
 
 /**
@@ -255,7 +253,7 @@ public class NormalContext implements InputContext {
 		camera.setOrientationToPlayer(client.getMyPlayer());
 		long now = System.currentTimeMillis();
 		if (lastOrientationUpdateSentAt + ORIENTATION_UPDATE_LIMIT < now) {
-			ForkJoinPool.commonPool().submit(() -> inputHandler.getComm().sendDatagramPacket(ClientOrientationState.fromPlayer(client.getMyPlayer())));
+			inputHandler.getComm().sendDatagramPacket(ClientOrientationState.fromPlayer(client.getMyPlayer()));
 			lastOrientationUpdateSentAt = now;
 		}
 	}
