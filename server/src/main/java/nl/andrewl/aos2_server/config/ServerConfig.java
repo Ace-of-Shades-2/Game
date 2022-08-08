@@ -4,7 +4,7 @@ public class ServerConfig {
 	public int port = 25565;
 	public String name = "My Server";
 	public String description = "My server";
-	public String[] registries = new String[0];
+	public RegistryConfig[] registries = new RegistryConfig[0];
 
 	public int maxPlayers = 32;
 	public int connectionBacklog = 5;
@@ -54,5 +54,10 @@ public class ServerConfig {
 			this.color = color;
 			this.spawnPoint = spawnPoint;
 		}
+	}
+
+	public static class RegistryConfig {
+		public String url;
+		public String token;
 	}
 }

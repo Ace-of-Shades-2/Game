@@ -1,6 +1,7 @@
 package nl.andrewl.aos2_server;
 
 import com.google.gson.Gson;
+import nl.andrewl.aos2_server.config.ServerConfig;
 
 import java.io.IOException;
 import java.net.URI;
@@ -39,10 +40,12 @@ public class RegistryUpdater {
 			data.put("maxPlayers", cfg.maxPlayers);
 			data.put("currentPlayers", server.getPlayerManager().getPlayers().size());
 			String json = new Gson().toJson(data);
-			for (String registryUrl : server.getConfig().registries) {
+			for (ServerConfig.RegistryConfig registryConfig : server.getConfig().registries) {
+				String registryUrl = registryConfig.url;
 				HttpRequest req = HttpRequest.newBuilder(URI.create(registryUrl + "/servers"))
 						.POST(HttpRequest.BodyPublishers.ofString(json))
 						.header("Content-Type", "application/json")
+						.header("X-AOS2-REGISTRY-TOKEN", registryConfig.token)
 						.timeout(Duration.ofSeconds(3))
 						.build();
 				try {

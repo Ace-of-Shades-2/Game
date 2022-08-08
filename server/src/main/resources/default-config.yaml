@@ -3,7 +3,8 @@ port: 25565
 name: My Server
 description: This is my Ace of Shades server.
 registries:
-  - https://reg.aos2.net
+  - url: https://example.com
+    token: abc
 maxPlayers: 32
 connectionBacklog: 5
 ticksPerSecond: 20.0
