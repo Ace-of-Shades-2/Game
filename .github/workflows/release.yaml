@@ -72,3 +72,48 @@ jobs:
           upload_url: ${{steps.create_release.outputs.upload_url}}
           asset_name: aos2-client-${{steps.get_version.outputs.tag_version}}-linux-arm32.jar
           token: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Build MacOS AARCH64
+        uses: ./.github/actions/build-module
+        with:
+          module: client
+          profile: lwjgl-natives-macos-aarch64
+          upload_url: ${{steps.create_release.outputs.upload_url}}
+          asset_name: aos2-client-${{steps.get_version.outputs.tag_version}}-macos-aarch64.jar
+          token: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Build MacOS x86-64
+        uses: ./.github/actions/build-module
+        with:
+          module: client
+          profile: lwjgl-natives-macos-x86_64
+          upload_url: ${{steps.create_release.outputs.upload_url}}
+          asset_name: aos2-client-${{steps.get_version.outputs.tag_version}}-macos-x86_64.jar
+          token: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Build Windows AARCH64
+        uses: ./.github/actions/build-module
+        with:
+          module: client
+          profile: lwjgl-natives-windows-aarch64
+          upload_url: ${{steps.create_release.outputs.upload_url}}
+          asset_name: aos2-client-${{steps.get_version.outputs.tag_version}}-windows-aarch64.jar
+          token: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Build Windows AMD64
+        uses: ./.github/actions/build-module
+        with:
+          module: client
+          profile: lwjgl-natives-windows-amd64
+          upload_url: ${{steps.create_release.outputs.upload_url}}
+          asset_name: aos2-client-${{steps.get_version.outputs.tag_version}}-windows-amd64.jar
+          token: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Build Windows x86
+        uses: ./.github/actions/build-module
+        with:
+          module: client
+          profile: lwjgl-natives-windows-x86
+          upload_url: ${{steps.create_release.outputs.upload_url}}
+          asset_name: aos2-client-${{steps.get_version.outputs.tag_version}}-windows-x86.jar
+          token: ${{secrets.GITHUB_TOKEN}}
