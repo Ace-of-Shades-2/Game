@@ -94,7 +94,7 @@ public class GameRenderer {
 		glfwSetCursorPos(windowHandle, 0, 0);
 
 		glfwMakeContextCurrent(windowHandle);
-		glfwSwapInterval(1);
+		glfwSwapInterval(0);
 		glfwShowWindow(windowHandle);
 
 		GL.createCapabilities();
@@ -155,7 +155,7 @@ public class GameRenderer {
 		return guiRenderer;
 	}
 
-	public void draw() {
+	public void draw(float dt) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		ClientPlayer myPlayer = client.getMyPlayer();
@@ -170,15 +170,15 @@ public class GameRenderer {
 
 		// Model rendering
 		modelRenderer.start(camera.getViewTransformData());
-		playerRenderer.render(client.getMyPlayer(), client.getPlayers().values(), client.getWorld());
+		playerRenderer.render(client.getMyPlayer(), client.getPlayersCache(), client.getWorld());
 		projectileRenderer.render(client.getProjectiles().values());
-		teamRenderer.render(client.getTeams().values());
+		teamRenderer.render(client.getTeamsCache());
 		modelRenderer.end();
 
 		// GUI rendering
 		guiRenderer.start();
 		guiRenderer.drawNameplates(myPlayer, camera.getViewTransformData(), perspectiveTransformData);
-		guiRenderer.drawNvg(screenWidth, screenHeight, client);
+		guiRenderer.drawNvg(screenWidth, screenHeight, client, dt);
 		guiRenderer.end();
 
 		glfwSwapBuffers(windowHandle);

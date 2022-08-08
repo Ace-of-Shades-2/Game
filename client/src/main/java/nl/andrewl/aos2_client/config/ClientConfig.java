@@ -12,5 +12,6 @@ public class ClientConfig {
 		public boolean fullscreen = true;
 		public boolean captureCursor = true;
 		public float fov = 70;
+		public float targetFps = 144;
 	}
 }

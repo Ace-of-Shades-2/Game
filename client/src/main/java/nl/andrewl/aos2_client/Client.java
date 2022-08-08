@@ -8,6 +8,7 @@ import nl.andrewl.aos2_client.model.ClientPlayer;
 import nl.andrewl.aos2_client.model.OtherPlayer;
 import nl.andrewl.aos2_client.render.GameRenderer;
 import nl.andrewl.aos2_client.sound.SoundManager;
+import nl.andrewl.aos2_client.util.StringUtils;
 import nl.andrewl.aos_core.config.Config;
 import nl.andrewl.aos_core.model.Projectile;
 import nl.andrewl.aos_core.model.Team;
@@ -20,9 +21,7 @@ import org.joml.Vector3f;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -45,7 +44,10 @@ public class Client implements Runnable {
 	private final Chat chat;
 	private final Queue<Runnable> mainThreadActions;
 
-	private final Vector3f playerMovement = new Vector3f(); // Util vector to use to avoid allocations at runtime.
+	private final Vector3f movementVector = new Vector3f(); // Util vector to use to avoid allocations at runtime.
+	private final List<OtherPlayer> playersCache = new ArrayList<>(32);
+	private final List<Team> teamsCache = new ArrayList<>(8);
+	private final List<Projectile> projectilesCache = new ArrayList<>(128);
 
 	public Client(ClientConfig config, ConnectConfig connectConfig) {
 		this.config = config;
@@ -89,10 +91,12 @@ public class Client implements Runnable {
 		gameRenderer = new GameRenderer(this, inputHandler, camera);
 		soundManager = new SoundManager();
 
-		long lastFrameAt = System.currentTimeMillis();
+		long lastFrameNanos = System.nanoTime();
+		final long nanosPerFrame = (long) (1_000_000_000 / config.display.targetFps);
 		while (!gameRenderer.windowShouldClose() && !communicationHandler.isDone()) {
-			long now = System.currentTimeMillis();
-			float dt = (now - lastFrameAt) / 1000f;
+			long nowNanos = System.nanoTime();
+			long nowMillis = nowNanos / 1_000_000;
+			float dt = (nowNanos - lastFrameNanos) / 1_000_000_000f;
 
 			world.processQueuedChunkUpdates();
 			while (!mainThreadActions.isEmpty()) {
@@ -100,12 +104,25 @@ public class Client implements Runnable {
 			}
 			soundManager.updateListener(myPlayer.getPosition(), myPlayer.getVelocity());
 			gameRenderer.getCamera().interpolatePosition(dt);
-			interpolatePlayers(now, dt);
+			interpolatePlayers(nowMillis, dt);
 			interpolateProjectiles(dt);
-			soundManager.playWalkingSounds(myPlayer, world, now);
+			soundManager.playWalkingSounds(myPlayer, world, nowMillis);
 
-			gameRenderer.draw();
-			lastFrameAt = now;
+			gameRenderer.draw(dt);
+			lastFrameNanos = nowNanos;
+			long elapsedNanos = System.nanoTime() - lastFrameNanos;
+			if (elapsedNanos < nanosPerFrame) {
+				long sleepTimeNanos = nanosPerFrame - elapsedNanos;
+				if (sleepTimeNanos > 0) {
+					long sleepMillis = sleepTimeNanos / 1_000_000;
+					int sleepNanos = (int) (sleepTimeNanos % 1_000_000);
+					try {
+						Thread.sleep(sleepMillis, sleepNanos);
+					} catch (InterruptedException e) {
+						throw new RuntimeException(e);
+					}
+				}
+			}
 		}
 		soundManager.free();
 		gameRenderer.freeWindow();
@@ -235,6 +252,24 @@ public class Client implements Runnable {
 		return players;
 	}
 
+	public Collection<OtherPlayer> getPlayersCache() {
+		playersCache.clear();
+		playersCache.addAll(players.values());
+		return playersCache;
+	}
+
+	public Collection<Team> getTeamsCache() {
+		teamsCache.clear();
+		teamsCache.addAll(teams.values());
+		return teamsCache;
+	}
+
+	public Collection<Projectile> getProjectilesCache() {
+		projectilesCache.clear();
+		projectilesCache.addAll(projectiles.values());
+		return projectilesCache;
+	}
+
 	public Map<Integer, Projectile> getProjectiles() {
 		return projectiles;
 	}
@@ -248,9 +283,9 @@ public class Client implements Runnable {
 	}
 
 	public void interpolatePlayers(long now, float dt) {
-		for (var player : players.values()) {
-			playerMovement.set(player.getVelocity()).mul(dt);
-			player.getPosition().add(playerMovement);
+		for (var player : getPlayersCache()) {
+			movementVector.set(player.getVelocity()).mul(dt);
+			player.getPosition().add(movementVector);
 			player.updateModelTransform();
 			soundManager.playWalkingSounds(player, world, now);
 		}
@@ -258,10 +293,9 @@ public class Client implements Runnable {
 	}
 
 	public void interpolateProjectiles(float dt) {
-		Vector3f movement = new Vector3f();
-		for (var proj : projectiles.values()) {
-			movement.set(proj.getVelocity()).mul(dt);
-			proj.getPosition().add(movement);
+		for (var proj : getProjectilesCache()) {
+			movementVector.set(proj.getVelocity()).mul(dt);
+			proj.getPosition().add(movementVector);
 		}
 	}
 
@@ -286,6 +320,7 @@ public class Client implements Runnable {
 		}
 		ClientConfig clientConfig = Config.loadConfig(ClientConfig.class, configPaths, new ClientConfig(), "default-config.yaml");
 		Client client = new Client(clientConfig, connectCfg);
+		System.out.println(StringUtils.format(0.038f, 3));
 		client.run();
 	}
 }

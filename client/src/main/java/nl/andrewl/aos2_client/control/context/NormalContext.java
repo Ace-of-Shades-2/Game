@@ -47,6 +47,8 @@ public class NormalContext implements InputContext {
 
 	private float lastMouseCursorX;
 	private float lastMouseCursorY;
+	private final double[] mouseCursorXBuffer = new double[1];
+	private final double[] mouseCursorYBuffer = new double[1];
 	private long lastOrientationUpdateSentAt = 0L;
 
 	public NormalContext(InputHandler inputHandler, Camera camera) {
@@ -234,11 +236,9 @@ public class NormalContext implements InputContext {
 
 	@Override
 	public void mouseCursorPos(long window, double xPos, double yPos) {
-		double[] xb = new double[1];
-		double[] yb = new double[1];
-		glfwGetCursorPos(window, xb, yb);
-		float x = (float) xb[0];
-		float y = (float) yb[0];
+		glfwGetCursorPos(window, mouseCursorXBuffer, mouseCursorYBuffer);
+		float x = (float) mouseCursorXBuffer[0];
+		float y = (float) mouseCursorYBuffer[0];
 		float dx = x - lastMouseCursorX;
 		float dy = y - lastMouseCursorY;
 		lastMouseCursorX = x;

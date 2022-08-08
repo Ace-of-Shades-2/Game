@@ -8,3 +8,4 @@ display:
   fullscreen: true
   captureCursor: true
   fov: 80
+  targetFps: 144

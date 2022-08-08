@@ -3,8 +3,8 @@ package nl.andrewl.aos_core.model;
 import nl.andrewl.aos_core.Directions;
 import nl.andrewl.aos_core.MathUtils;
 import nl.andrewl.aos_core.model.world.World;
-import org.joml.*;
 import org.joml.Math;
+import org.joml.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -221,8 +221,16 @@ public class Player {
 		// Player must be flat on the top of a block.
 		if (Math.floor(position.y) != position.y) return false;
 		// Check to see if there's a block under any of the spaces the player is over.
-		return getHorizontalSpaceOccupied(position).stream()
-				.anyMatch(point -> world.getBlockAt(point.x, position.y - 0.1f, point.y) != 0);
+		int minX = (int) Math.floor(position.x - RADIUS);
+		int minZ = (int) Math.floor(position.z - RADIUS);
+		int maxX = (int) Math.floor(position.x + RADIUS);
+		int maxZ = (int) Math.floor(position.z + RADIUS);
+		for (int x = minX; x <= maxX; x++) {
+			for (int z = minZ; z <= maxZ; z++) {
+				if (world.getBlockAt(x, position.y - 0.1f, z) != 0) return true;
+			}
+		}
+		return false;
 	}
 
 	public List<Vector3i> getBlockSpaceOccupied() {

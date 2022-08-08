@@ -6,6 +6,7 @@ import nl.andrewl.aos2_client.model.ClientPlayer;
 import nl.andrewl.aos2_client.model.OtherPlayer;
 import nl.andrewl.aos2_client.render.ShaderProgram;
 import nl.andrewl.aos2_client.sound.SoundSource;
+import nl.andrewl.aos2_client.util.StringUtils;
 import nl.andrewl.aos_core.FileUtils;
 import nl.andrewl.aos_core.model.Player;
 import nl.andrewl.aos_core.model.PlayerMode;
@@ -64,6 +65,7 @@ public class GuiRenderer {
 	private final int namePlateTextureSamplerUniform;
 	private final Font namePlateFont;
 	private final Map<OtherPlayer, GuiTexture> playerNamePlates = new HashMap<>();
+	private final Set<OtherPlayer> playerNamePlateRemovalSet = new HashSet<>(32);
 
 	public GuiRenderer() throws IOException {
 		vgId = nvgCreate(NVG_ANTIALIAS);
@@ -153,9 +155,10 @@ public class GuiRenderer {
 	}
 
 	private void retainNamePlates(Collection<OtherPlayer> players) {
-		Set<OtherPlayer> removalSet = new HashSet<>(playerNamePlates.keySet());
-		removalSet.removeAll(players);
-		for (OtherPlayer playerToRemove : removalSet) {
+		playerNamePlateRemovalSet.clear();
+		playerNamePlateRemovalSet.addAll(playerNamePlates.keySet());
+		playerNamePlateRemovalSet.removeAll(players);
+		for (OtherPlayer playerToRemove : playerNamePlateRemovalSet) {
 			removeNamePlate(playerToRemove);
 		}
 	}
@@ -221,7 +224,7 @@ public class GuiRenderer {
 		shaderProgram.use();
 	}
 
-	public void drawNvg(float width, float height, Client client) {
+	public void drawNvg(float width, float height, Client client, float dt) {
 		nvgBeginFrame(vgId, width, height, width / height);
 		nvgSave(vgId);
 
@@ -234,7 +237,7 @@ public class GuiRenderer {
 			if (mode == PlayerMode.NORMAL) drawHealthBar(width, height, client.getMyPlayer());
 		}
 		if (client.getInputHandler().getNormalContext().isDebugEnabled()) {
-			drawDebugInfo(width, height, client);
+			drawDebugInfo(width, height, client, dt);
 		}
 		if (client.getInputHandler().isExitMenuContextActive()) {
 			drawExitMenu(width, height);
@@ -296,7 +299,7 @@ public class GuiRenderer {
 		nvgFontSize(vgId, 12f);
 		nvgFontFaceId(vgId, jetbrainsMonoFont);
 		nvgTextAlign(vgId, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
-		nvgText(vgId, w - 165, h - 95, String.format("%.2f / 1.00", player.getHealth()));
+		nvgText(vgId, w - 165, h - 95, StringUtils.format(player.getHealth(), 2) + " / 1.00");
 	}
 
 	private void drawHeldItemStackInfo(float w, float h, ClientPlayer player) {
@@ -336,8 +339,8 @@ public class GuiRenderer {
 		nvgFontSize(vgId, 12f);
 		nvgFontFaceId(vgId, jetbrainsMonoFont);
 		nvgTextAlign(vgId, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
-		nvgText(vgId, w - 140, h - 30, String.format("%d / %d Blocks", stack.getAmount(), block.getMaxAmount()));
-		nvgText(vgId, w - 140, h - 14, String.format("Selected value: %d", stack.getSelectedValue()));
+		nvgText(vgId, w - 140, h - 30, stack.getAmount() + " / " + block.getMaxAmount() + " Blocks");
+		nvgText(vgId, w - 140, h - 14, "Selected value: " + stack.getSelectedValue());
 	}
 
 	private void drawChat(float w, float h, Client client) {
@@ -370,35 +373,38 @@ public class GuiRenderer {
 		}
 	}
 
-	private void drawDebugInfo(float w, float h, Client client) {
+	private void drawDebugInfo(float w, float h, Client client, float dt) {
 		float y = h / 4 + 10;
 		nvgFontSize(vgId, 12f);
 		nvgFontFaceId(vgId, jetbrainsMonoFont);
 		nvgTextAlign(vgId, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
 		nvgFillColor(vgId, GuiUtils.rgba(1, 1, 1, 1, colorA));
 		var pos = client.getMyPlayer().getPosition();
-		nvgText(vgId, 5, y, String.format("Pos: x=%.3f, y=%.3f, z=%.3f", pos.x, pos.y, pos.z));
+		nvgText(vgId, 5, y, "Pos: x=" + StringUtils.format(pos.x, 3) + ", y=" + StringUtils.format(pos.y, 3) + ", z=" + StringUtils.format(pos.z, 3));
 		y += 12;
 		var vel = client.getMyPlayer().getVelocity();
-		nvgText(vgId, 5, y, String.format("Vel: x=%.3f, y=%.3f, z=%.3f, speed=%.3f", vel.x, vel.y, vel.z, vel.length()));
+		nvgText(vgId, 5, y, "Vel: x=" + StringUtils.format(vel.x, 3) + ", y=" + StringUtils.format(vel.y, 3) + ", z=" + StringUtils.format(vel.z, 3) + ", speed=" + StringUtils.format(vel.length(), 3));
 		y += 12;
 		var view = client.getMyPlayer().getOrientation();
-		nvgText(vgId, 5, y, String.format("View: horizontal=%.3f, vertical=%.3f", Math.toDegrees(view.x), Math.toDegrees(view.y)));
+		nvgText(vgId, 5, y, "View: horizontal=" + StringUtils.format((float) Math.toDegrees(view.x), 3) + ", vertical=" + StringUtils.format((float) Math.toDegrees(view.y), 3));
+		y += 12;
+		float fps = 1 / dt;
+		nvgText(vgId, 5, y, "FPS: " + StringUtils.format(fps, 1));
 		y += 12;
 		var soundSources = client.getSoundManager().getSources();
 		int activeCount = (int) soundSources.stream().filter(SoundSource::isPlaying).count();
-		nvgText(vgId, 5, y, String.format("Sounds: %d / %d playing", activeCount, soundSources.size()));
+		nvgText(vgId, 5, y, "Sounds: " + activeCount + " / " + soundSources.size() + " playing");
 		y += 12;
-		nvgText(vgId, 5, y, String.format("Projectiles: %d", client.getProjectiles().size()));
+		nvgText(vgId, 5, y, "Projectiles: " + client.getProjectiles().size());
 		y += 12;
-		nvgText(vgId, 5, y, String.format("Players: %d", client.getPlayers().size()));
+		nvgText(vgId, 5, y, "Players: " + client.getPlayers().size());
 		y += 12;
-		nvgText(vgId, 5, y, String.format("Chunks: %d", client.getWorld().getChunkMap().size()));
+		nvgText(vgId, 5, y, "Chunks: " + client.getWorld().getChunkMap().size());
 		y += 12;
 
 		Hit hit = client.getWorld().getLookingAtPos(client.getMyPlayer().getEyePosition(), client.getMyPlayer().getViewVector(), 50);
 		if (hit != null) {
-			nvgText(vgId, 5, y, String.format("Looking at: x=%d, y=%d, z=%d", hit.pos().x, hit.pos().y, hit.pos().z));
+			nvgText(vgId, 5, y, "Looking at: x=" + hit.pos().x + ", y=" + hit.pos().y + ", z=" + hit.pos().z);
 		}
 	}
 
