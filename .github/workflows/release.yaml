@@ -30,10 +30,45 @@ jobs:
           cache: maven
 
       - name: Build Server
-        id: build_server
         uses: ./.github/actions/build-module
         with:
           module: server
           upload_url: ${{steps.create_release.outputs.upload_url}}
           asset_name: aos2-server-${{steps.get_version.outputs.tag_version}}.jar
+          token: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Build Linux AMD64
+        uses: ./.github/actions/build-module
+        with:
+          module: client
+          profile: lwjgl-natives-linux-amd64
+          upload_url: ${{steps.create_release.outputs.upload_url}}
+          asset_name: aos2-client-${{steps.get_version.outputs.tag_version}}-linux-amd64.jar
+          token: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Build Linux AARCH64
+        uses: ./.github/actions/build-module
+        with:
+          module: client
+          profile: lwjgl-natives-linux-aarch64
+          upload_url: ${{steps.create_release.outputs.upload_url}}
+          asset_name: aos2-client-${{steps.get_version.outputs.tag_version}}-linux-aarch64.jar
+          token: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Build Linux ARM
+        uses: ./.github/actions/build-module
+        with:
+          module: client
+          profile: lwjgl-natives-linux-arm
+          upload_url: ${{steps.create_release.outputs.upload_url}}
+          asset_name: aos2-client-${{steps.get_version.outputs.tag_version}}-linux-arm.jar
+          token: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Build Linux ARM32
+        uses: ./.github/actions/build-module
+        with:
+          module: client
+          profile: lwjgl-natives-linux-arm32
+          upload_url: ${{steps.create_release.outputs.upload_url}}
+          asset_name: aos2-client-${{steps.get_version.outputs.tag_version}}-linux-arm32.jar
           token: ${{secrets.GITHUB_TOKEN}}
