@@ -6,11 +6,10 @@ A simple 3D voxel-based shooter inspired by Ace of Spades. With some basic weapo
 ## Quick-Start Guide
 _Read this guide to get started and join a server in just a minute or two!_
 
-1. Make sure you've got at least Java 17 installed. You can get it [here](https://adoptium.net/temurin/releases).
-2. Download the `aos2-client` JAR file from the [releases page](https://github.com/andrewlalis/ace-of-shades-2/releases) that's compatible with your system.
-3. Run the game by double-clicking the JAR file, or entering `java -jar <jarfile>` in a terminal. This should generate a `client.yaml` file.
-4. Set the `serverHost`, `serverPort`, and `username` properties accordingly for the server you want to join.
-5. Run the game again to join the server and start playing!
+### Installing
+Download the [installer](https://github.com/Ace-of-Shades-2/Launcher/releases/latest) that's right for your system.
+- Windows users: choose the `.msi` installer. Double-click it to install.
+- Linux users: choose the `.deb` package. Run `sudo apt install ./ace-of-shades-launcher*.deb` to install.
 
 ### Controls
 - `WASD` to move, `SPACE` to jump, `LEFT-CONTROL` to crouch.
