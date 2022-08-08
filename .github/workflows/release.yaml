@@ -1,0 +1,38 @@
+name: Build and Release
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+jobs:
+  make_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract Tag Version
+        id: get_version
+        run: echo "::set-output name=tag_version::${GITHUB_REF/refs\/tags\//}"
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Ace of Shades ${{steps.get_version.outputs.tag_version}}
+
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: temurin
+          cache: maven
+
+      - name: Build Server
+        id: build_server
+        uses: ./.github/actions/build-module
+        with:
+          module: server
+          upload_url: ${{steps.create_release.outputs.upload_url}}
+          asset_name: aos2-server-${{steps.get_version.outputs.tag_version}}

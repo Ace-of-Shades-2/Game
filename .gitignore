@@ -6,7 +6,7 @@ server.yaml
 
 # Ignore the ./config directory so that developers can put their config files
 # there for server and client apps.
-config
+./config/
 
 # Ignore compiled tool executables
 build-clients

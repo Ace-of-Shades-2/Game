@@ -1,0 +1,33 @@
+name: Build and Publish
+description: Builds a maven module and extracts a jar-with-dependencies, then publishes it to a release.
+inputs:
+  module:
+    required: true
+    description: The module to build.
+  upload_url:
+    required: true
+    description: The release upload URL to upload the asset to.
+  asset_name:
+    required: true
+    description: The filename for the uploaded asset.
+
+runs:
+  using: composite
+  steps:
+    - name: Build Module
+      id: build
+      shell: bash
+      run: |
+        mvn -B -pl ${{inputs.module}} -am clean package
+        asset=$(find target/ -type f -name "*jar-with-dependencies.jar")
+        echo "::set-output name=asset_path::$asset"
+    - name: Upload Asset
+      id: upload
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      with:
+        upload_url: ${{inputs.upload_url}}
+        asset_name: ${{inputs.asset_name}}
+        asset_path: ${{steps.build.outputs.asset_path}}
+        asset_content_type: application/octet-stream
