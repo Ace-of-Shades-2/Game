@@ -4,6 +4,9 @@ inputs:
   module:
     required: true
     description: The module to build.
+  profile:
+    required: false
+    description: The maven profile to activate.
   upload_url:
     required: true
     description: The release upload URL to upload the asset to.
@@ -21,7 +24,13 @@ runs:
       id: build
       shell: bash
       run: |
-        mvn -B -pl ${{inputs.module}} -am clean package
+        command="mvn -B -pl ${{inputs.module}} -am"
+        if [ ! -z "${{inputs.profile}}" -a "${{inputs.profile}}" != " " ]; then
+          echo "Using profile: ${{inputs.profile}}"
+          command="$command -P${{inputs.profile}}"
+        fi
+        command="$command clean package"
+        eval $command
         asset=$(find ${{inputs.module}}/target/ -type f -name "*jar-with-dependencies.jar")
         echo "::set-output name=asset_path::$asset"
     - name: Upload Asset

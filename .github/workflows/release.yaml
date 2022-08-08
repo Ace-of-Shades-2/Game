@@ -35,5 +35,5 @@ jobs:
         with:
           module: server
           upload_url: ${{steps.create_release.outputs.upload_url}}
-          asset_name: aos2-server-${{steps.get_version.outputs.tag_version}}
+          asset_name: aos2-server-${{steps.get_version.outputs.tag_version}}.jar
           token: ${{secrets.GITHUB_TOKEN}}
