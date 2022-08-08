@@ -1,0 +1,10 @@
+# Ace of Shades 2 Client Configuration
+
+# Settings for input.
+input:
+  mouseSensitivity: 0.005
+# Settings for display.
+display:
+  fullscreen: true
+  captureCursor: true
+  fov: 80

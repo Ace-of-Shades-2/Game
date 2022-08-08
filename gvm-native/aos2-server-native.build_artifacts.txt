@@ -1,0 +1,3 @@
+[EXECUTABLE]
+aos2-server-native
+
