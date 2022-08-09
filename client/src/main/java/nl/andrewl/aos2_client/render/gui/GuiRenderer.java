@@ -66,6 +66,8 @@ public class GuiRenderer {
 	private final Font namePlateFont;
 	private final Map<OtherPlayer, GuiTexture> playerNamePlates = new HashMap<>();
 	private final Set<OtherPlayer> playerNamePlateRemovalSet = new HashSet<>(32);
+	private static final int FPS_DEQUE_SIZE = 10;
+	private final Deque<Float> fpsDeque = new ArrayDeque<>(FPS_DEQUE_SIZE);
 
 	public GuiRenderer() throws IOException {
 		vgId = nvgCreate(NVG_ANTIALIAS);
@@ -388,9 +390,18 @@ public class GuiRenderer {
 		var view = client.getMyPlayer().getOrientation();
 		nvgText(vgId, 5, y, "View: horizontal=" + StringUtils.format((float) Math.toDegrees(view.x), 3) + ", vertical=" + StringUtils.format((float) Math.toDegrees(view.y), 3));
 		y += 12;
+
 		float fps = 1 / dt;
-		nvgText(vgId, 5, y, "FPS: " + StringUtils.format(fps, 1));
+		while (fpsDeque.size() >= FPS_DEQUE_SIZE) {
+			fpsDeque.removeLast();
+		}
+		fpsDeque.addFirst(fps);
+		float avgFps = 0;
+		for (var f : fpsDeque) avgFps += f;
+		avgFps /= fpsDeque.size();
+		nvgText(vgId, 5, y, "FPS: " + StringUtils.format(avgFps, 0));
 		y += 12;
+
 		var soundSources = client.getSoundManager().getSources();
 		int activeCount = (int) soundSources.stream().filter(SoundSource::isPlaying).count();
 		nvgText(vgId, 5, y, "Sounds: " + activeCount + " / " + soundSources.size() + " playing");

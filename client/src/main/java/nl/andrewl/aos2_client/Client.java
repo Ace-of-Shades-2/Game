@@ -8,7 +8,6 @@ import nl.andrewl.aos2_client.model.ClientPlayer;
 import nl.andrewl.aos2_client.model.OtherPlayer;
 import nl.andrewl.aos2_client.render.GameRenderer;
 import nl.andrewl.aos2_client.sound.SoundManager;
-import nl.andrewl.aos2_client.util.StringUtils;
 import nl.andrewl.aos_core.config.Config;
 import nl.andrewl.aos_core.model.Projectile;
 import nl.andrewl.aos_core.model.Team;
@@ -320,7 +319,6 @@ public class Client implements Runnable {
 		}
 		ClientConfig clientConfig = Config.loadConfig(ClientConfig.class, configPaths, new ClientConfig(), "default-config.yaml");
 		Client client = new Client(clientConfig, connectCfg);
-		System.out.println(StringUtils.format(0.038f, 3));
 		client.run();
 	}
 }
