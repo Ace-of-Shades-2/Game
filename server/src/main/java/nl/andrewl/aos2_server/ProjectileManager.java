@@ -10,6 +10,7 @@ import nl.andrewl.aos_core.model.Projectile;
 import nl.andrewl.aos_core.model.item.Gun;
 import nl.andrewl.aos_core.model.world.Hit;
 import nl.andrewl.aos_core.net.client.ClientHealthMessage;
+import nl.andrewl.aos_core.net.client.PlayerHitMessage;
 import nl.andrewl.aos_core.net.client.SoundMessage;
 import nl.andrewl.aos_core.net.world.ChunkUpdateMessage;
 import org.joml.Matrix4f;
@@ -163,7 +164,7 @@ public class ProjectileManager {
 			handleProjectileBlockHit(hit, projectile, now);
 		} else if (playerHit != null && (hit == null || playerHitDist < worldHitDist)) {
 			// Bullet struck the player first.
-			handleProjectilePlayerHit(playerHitType, hitPlayer, projectile);
+			handleProjectilePlayerHit(playerHitType, hitPlayer, projectile, playerHit);
 		} else {
 			// Bullet struck nothing.
 			projectile.getPosition().add(movement);
@@ -224,27 +225,24 @@ public class ProjectileManager {
 		deleteProjectile(projectile);
 	}
 
-	private void handleProjectilePlayerHit(int playerHitType, ServerPlayer hitPlayer, ServerProjectile projectile) {
+	private void handleProjectilePlayerHit(int playerHitType, ServerPlayer hitPlayer, ServerProjectile projectile, Vector3f playerHitPos) {
 		if (!server.getTeamManager().isProtected(hitPlayer)) {
 			Gun gun = (Gun) projectile.getSourceItem();
 			float damage = gun.getBaseDamage();
 			if (playerHitType == 1) {// headshot.
 				damage *= 2;
-				if (projectile.getPlayer() != null) {
-					var shooter = projectile.getPlayer();
-					server.getPlayerManager().getHandler(shooter).sendDatagramPacket(new SoundMessage("hit_1", 1, shooter.getPosition(), shooter.getVelocity()));
-				}
-			} else {
-				if (projectile.getPlayer() != null) {
-					var shooter = projectile.getPlayer();
-					server.getPlayerManager().getHandler(shooter).sendDatagramPacket(new SoundMessage("hit_2", 1, shooter.getPosition(), shooter.getVelocity()));
-				}
 			}
 			hitPlayer.setHealth(hitPlayer.getHealth() - damage);
 			Vector3f impactAcceleration = new Vector3f(projectile.getVelocity()).normalize().mul(3);
 			hitPlayer.getVelocity().add(impactAcceleration);
+			server.getPlayerManager().getHandler(projectile.getPlayer()).sendDatagramPacket(new PlayerHitMessage(
+					hitPlayer.getId(),
+					playerHitPos.x, playerHitPos.y, playerHitPos.z,
+					playerHitType == 1
+			));
 			int soundVariant = ThreadLocalRandom.current().nextInt(1, 4);
 			server.getPlayerManager().broadcastUdpMessage(new SoundMessage("hurt_" + soundVariant, 1, hitPlayer.getPosition(), hitPlayer.getVelocity()));
+			// Check if the player who got shot died, and if so, kill them. Otherwise, just send a health update.
 			if (hitPlayer.getHealth() == 0) {
 				server.getPlayerManager().playerKilled(hitPlayer, projectile.getPlayer());
 			} else {

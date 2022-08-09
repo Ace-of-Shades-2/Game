@@ -52,6 +52,7 @@ public final class Net {
 		serializer.registerType(i++, ChatMessage.class);
 		serializer.registerType(i++, ChatWrittenMessage.class);
 		serializer.registerType(i++, ClientRecoilMessage.class);
+		serializer.registerType(i++, PlayerHitMessage.class);
 		// Separate serializers for client inventory messages.
 		serializer.registerTypeSerializer(i++, new InventorySerializer());
 		serializer.registerTypeSerializer(i++, new ItemStackSerializer());

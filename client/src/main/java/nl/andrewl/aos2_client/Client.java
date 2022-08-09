@@ -224,6 +224,11 @@ public class Client implements Runnable {
 				}
 				communicationHandler.sendDatagramPacket(ClientOrientationState.fromPlayer(myPlayer));
 			});
+		} else if (msg instanceof PlayerHitMessage hitMessage) {
+			String hitSound = hitMessage.headshot() ? "hit_1" : "hit_2";
+			Vector3f hitPos = new Vector3f(hitMessage.px(), hitMessage.py(), hitMessage.pz());
+			soundManager.play(hitSound, 1, hitPos);
+			// TODO: Spawn in a hitmarker that persists for a second or so.
 		}
 	}
 
